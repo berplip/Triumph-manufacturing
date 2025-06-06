@@ -17,6 +17,7 @@ if __name__ == "__main__":
     root_app.geometry("900x700") # Tamaño inicial, ajustado para más contenido
     root_app.configure(background=COLOR_BACKGROUND)
     root_app.minsize(800, 600) # Tamaño mínimo permitido para la ventana
+    root_app.iconbitmap("logo.ico")
 
     # 3. Iniciar con la ventana de login.
     # Se pasa 'root_app' y la función 'inicializar_enciclopedia_ui' como callback.

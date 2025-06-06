@@ -1,27 +1,20 @@
-# config.py YAAAAAAAAAAAAAAAAAAAAA
+# config.py
+
 # Este archivo contiene las constantes de configuración para la aplicación.
 
 import os
 
 # --- Paleta de Colores ---
 COLOR_HEADER_BG = "#0A234D"
-COLOR_HEADER_FG = "white"
-COLOR_ACCENT = "#F39C12"
-COLOR_BACKGROUND = "white"
-COLOR_TEXT_GENERAL = "#333333"
-COLOR_TEXT_ON_ACCENT = "white"
-COLOR_LISTBOX_BG = "white"
-COLOR_LISTBOX_FG = COLOR_TEXT_GENERAL
-COLOR_LISTBOX_SELECT_BG = COLOR_ACCENT
-COLOR_LISTBOX_SELECT_FG = COLOR_TEXT_ON_ACCENT
-COLOR_TAB_INACTIVE_BG = "#E0E0E0"
-COLOR_TAB_ACTIVE_BG = COLOR_HEADER_BG
-COLOR_TAB_ACTIVE_FG = COLOR_HEADER_FG
-COLOR_TAB_INACTIVE_FG = COLOR_TEXT_GENERAL
+# ... (resto de colores sin cambios) ...
 COLOR_ERROR_TEXT = "#D8000C" # Rojo para texto de error
 
 # --- Rutas y Nombres de Archivo ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # Directorio raíz del proyecto
+
+# NUEVO: Directorio para recursos como logos e iconos
+ASSETS_DIR_NAME = "assets"
+ASSETS_PATH = os.path.join(BASE_DIR, ASSETS_DIR_NAME)
 
 # Directorio para las imágenes de los productos
 IMAGENES_PRODUCTOS_DIR_NAME = "imagenes_productos"
@@ -29,7 +22,7 @@ IMAGENES_PRODUCTOS_PATH = os.path.join(BASE_DIR, IMAGENES_PRODUCTOS_DIR_NAME)
 
 # Directorio para los manuales de los productos (PDFs locales)
 MANUALES_PRODUCTOS_DIR_NAME = "manuales_productos"
-MANUALES_PRODUCTOS_PATH = os.path.join(BASE_DIR, MANUALES_PRODUCTOS_DIR_NAME) # Asegúrate que esta línea exista y sea correcta
+MANUALES_PRODUCTOS_PATH = os.path.join(BASE_DIR, MANUALES_PRODUCTOS_DIR_NAME)
 
 # Archivo de log de Excel
 EXCEL_LOG_FILENAME = "registro_actividad_balanzas.xlsx"
@@ -39,8 +32,9 @@ EXCEL_LOG_FILE_FULL_PATH = os.path.join(LOGS_PATH, EXCEL_LOG_FILENAME)
 
 # Crear las carpetas necesarias si no existen
 paths_to_create = [
+    ASSETS_PATH, # Asegurar que se cree la carpeta de assets
     IMAGENES_PRODUCTOS_PATH,
-    MANUALES_PRODUCTOS_PATH, # Asegurar que se cree la carpeta de manuales
+    MANUALES_PRODUCTOS_PATH,
     LOGS_PATH
 ]
 for path in paths_to_create:

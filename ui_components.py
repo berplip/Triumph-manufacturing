@@ -8,22 +8,22 @@ import os
 import datetime
 
 # Importaciones de otros módulos del proyecto
-import config 
-import data_manager 
+import config
+import data_manager
 from auth_handler import autenticar_usuario
 from excel_logger import registrar_accion_excel
 from utils import abrir_enlace_web_util
 
 # --- Variables de Módulo para Referencias a Widgets ---
-app_principal_ref = None 
+app_principal_ref = None
 entrada_modelo_busqueda_widget = None
 lista_sugerencias_busqueda_widget = None
 notebook_widget = None
-tab_info_producto_widget = None 
-frame_info_producto_dinamico = None 
+tab_info_producto_widget = None
+frame_info_producto_dinamico = None
 lbl_total_stock_widget = None
-campos_edicion_producto_actual = {} 
-style_aplicacion_global = None 
+campos_edicion_producto_actual = {}
+style_aplicacion_global = None
 
 # --- Funciones Auxiliares de UI ---
 def _limpiar_frame_contenido_widgets(frame):
@@ -172,7 +172,7 @@ def mostrar_informacion_producto_seleccionado_ui(event=None):
     nombre_sel = lista_sugerencias_busqueda_widget.get(indices[0])
     datos_prod = data_manager.get_producto_data(nombre_sel)
 
-    registrar_accion_excel("Consulta Producto", f"Producto: {nombre_sel}") #
+    registrar_accion_excel("Consulta Producto", f"Producto: {nombre_sel}")
 
     if not datos_prod: messagebox.showerror("Error", f"Datos no encontrados para {nombre_sel}.", parent=app_principal_ref); return
     if notebook_widget and tab_info_producto_widget: notebook_widget.select(tab_info_producto_widget)
@@ -189,7 +189,7 @@ def mostrar_informacion_producto_seleccionado_ui(event=None):
     img_filename = datos_prod.get('imagen', '')
     if img_filename:
         try:
-            ruta_img = os.path.join(config.IMAGENES_PRODUCTOS_PATH, img_filename) #
+            ruta_img = os.path.join(config.IMAGENES_PRODUCTOS_PATH, img_filename)
             if os.path.exists(ruta_img):
                 img_original_pil = Image.open(ruta_img)
                 img_original_pil.thumbnail((200, 250)) 
@@ -208,11 +208,9 @@ def mostrar_informacion_producto_seleccionado_ui(event=None):
     
     ttk.Label(text_frame, text=f"Producto: {nombre_sel}", style="Info.Header.TLabel").pack(pady=(0, 10), anchor="nw")
     
-    # MODIFICADO: Se simplifica la definición de campos para que sea la misma para ambos roles
     campos_def = {"serie": "Número de serie:", "manual": "Manual:", "calibracion": "Calibración:", "bateria": "Batería:", "info": "Info Adicional:", "imagen": "Archivo Imagen:", "stock": "Stock:"}
     
     for key, label_txt in campos_def.items():
-        # Ocultar campos que no son para el usuario normal
         if data_manager.usuario_actual["rol"] != 'administrador' and key in ['imagen', 'stock']:
             continue
             
@@ -232,13 +230,19 @@ def mostrar_informacion_producto_seleccionado_ui(event=None):
             entry_w.pack(side="left", fill="x", expand=True)
             campos_edicion_producto_actual[key] = entry_w
         else:
-            # MODIFICADO: La vista de usuario ahora siempre muestra el valor real del dato, no "Disponible"
-            texto_final = val_dato.strip() if val_dato.strip() else "No disponible"
-            if key == "info":
-                 lbl_val_w = ttk.Label(item_f, text=texto_final, style="Info.TLabel", wraplength=text_frame.winfo_width() - 150 if text_frame.winfo_width() > 150 else 250)
-                 lbl_val_w.pack(side="left", anchor="nw")
+            # --- MODIFICADO: Lógica para mostrar "Disponible" o "No disponible" ---
+            texto_a_mostrar = ''
+            if key in ["manual", "calibracion"]:
+                texto_a_mostrar = "Disponible" if val_dato.strip() else "No disponible"
             else:
-                 ttk.Label(item_f, text=texto_final, style="Info.TLabel").pack(side="left", anchor="nw")
+                texto_a_mostrar = val_dato.strip() if val_dato.strip() else "No disponible"
+
+            if key == "info":
+                lbl_val_w = ttk.Label(item_f, text=texto_a_mostrar, style="Info.TLabel", wraplength=text_frame.winfo_width() - 150 if text_frame.winfo_width() > 150 else 250)
+                lbl_val_w.pack(side="left", anchor="nw")
+            else:
+                ttk.Label(item_f, text=texto_a_mostrar, style="Info.TLabel").pack(side="left", anchor="nw")
+            # --- FIN DE LA MODIFICACIÓN ---
 
     btns_enlaces_f = ttk.Frame(text_frame, style="Content.TFrame")
     btns_enlaces_f.pack(fill="x", pady=(15,5), anchor="nw")

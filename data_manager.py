@@ -41,7 +41,7 @@ _productos = {
         "stock": 5
     },
     # MODIFICADO: Se corrigió la clave eliminando el espacio al final.
-    "XK": { 
+    "XK": {
         "serie": "123 ",
         "manual": "", # Sin manual local
         "calibracion": "", # Sin URL de calibración
