@@ -3,8 +3,6 @@
 # En esta versión, los datos están definidos directamente en este archivo.
 
 import hashlib
-# YA NO SE IMPORTA NADA DE CONFIG.PY RELACIONADO CON JSON
-
 # --- Almacenamiento de Usuarios (directamente en el código) ---
 # Contraseñas hasheadas: "pass123" para usuario1, "adminpass" para admin.
 _usuarios_registrados = {
