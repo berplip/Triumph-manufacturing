@@ -1,4 +1,4 @@
-# config.py
+# config.py YAAAAAAAAAAAAAAAAAAAAA
 # Este archivo contiene las constantes de configuración para la aplicación.
 
 import os
@@ -50,5 +50,3 @@ for path in paths_to_create:
             print(f"INFO (config.py): Directorio creado: {path}")
         except OSError as e:
             print(f"ADVERTENCIA (config.py): No se pudo crear el directorio '{path}': {e}")
-
-# NO se definen PRODUCTOS_JSON_FULL_PATH ni USUARIOS_JSON_FULL_PATH en esta versión w

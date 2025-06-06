@@ -24,7 +24,7 @@ hora_inicio_sesion_actual = None
 _productos = {
     "LP7516": {
         "serie": "666",
-        "manual": "LP7516_manual.pdf",
+        "manual": "lp7516manual.pdf",
         "calibracion": "https://www.youtube.com/watch?v=WJbHmguujdc&ab_channel=ONECOIN",
         "bateria": "4V4AH/20HR",
         "info": "Conector de 5 pines y RS232.",
@@ -40,7 +40,8 @@ _productos = {
         "imagen": "TCS-IND.png",
         "stock": 5
     },
-    "XK ": {
+    # MODIFICADO: Se corrigió la clave eliminando el espacio al final.
+    "XK": { 
         "serie": "123 ",
         "manual": "", # Sin manual local
         "calibracion": "", # Sin URL de calibración

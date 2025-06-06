@@ -3,7 +3,7 @@
 
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
-from PIL import Image, ImageTk # Asegúrate que PIL (Pillow) esté instalado
+from PIL import Image, ImageTk
 import os
 import datetime
 
@@ -172,7 +172,7 @@ def mostrar_informacion_producto_seleccionado_ui(event=None):
     nombre_sel = lista_sugerencias_busqueda_widget.get(indices[0])
     datos_prod = data_manager.get_producto_data(nombre_sel)
 
-    registrar_accion_excel("Consulta Producto", f"Producto: {nombre_sel}")
+    registrar_accion_excel("Consulta Producto", f"Producto: {nombre_sel}") #
 
     if not datos_prod: messagebox.showerror("Error", f"Datos no encontrados para {nombre_sel}.", parent=app_principal_ref); return
     if notebook_widget and tab_info_producto_widget: notebook_widget.select(tab_info_producto_widget)
@@ -182,80 +182,74 @@ def mostrar_informacion_producto_seleccionado_ui(event=None):
     text_frame = ttk.Frame(main_info_frame, style="Content.TFrame")
     text_frame.pack(side="left", fill="both", expand=True, padx=(0,10))
     
-    # --- Frame para la imagen (derecha) ---
-    image_display_frame = ttk.Frame(main_info_frame, style="Content.TFrame", width=220, height=270) # Altura fija también
-    image_display_frame.pack(side="right", fill="none", expand=False, padx=(10,0), anchor="ne") # fill="none", expand=False
+    image_display_frame = ttk.Frame(main_info_frame, style="Content.TFrame", width=220, height=270)
+    image_display_frame.pack(side="right", fill="none", expand=False, padx=(10,0), anchor="ne")
     image_display_frame.pack_propagate(False)
 
     img_filename = datos_prod.get('imagen', '')
     if img_filename:
         try:
-            ruta_img = os.path.join(config.IMAGENES_PRODUCTOS_PATH, img_filename)
-            print(f"DEBUG: Intentando cargar imagen desde: {ruta_img}") # Línea de depuración
+            ruta_img = os.path.join(config.IMAGENES_PRODUCTOS_PATH, img_filename) #
             if os.path.exists(ruta_img):
                 img_original_pil = Image.open(ruta_img)
-                print(f"DEBUG: Imagen '{img_filename}' abierta con Pillow. Modo: {img_original_pil.mode}, Tamaño: {img_original_pil.size}")
-                
-                # Redimensionar manteniendo aspecto, para que quepa en 200x250
                 img_original_pil.thumbnail((200, 250)) 
-                print(f"DEBUG: Imagen redimensionada a: {img_original_pil.size}")
-
                 img_tk_render_obj = ImageTk.PhotoImage(img_original_pil)
-                print(f"DEBUG: ImageTk.PhotoImage creado. Ancho: {img_tk_render_obj.width()}, Alto: {img_tk_render_obj.height()}")
-                
-                # Usar un tk.Label simple para asegurar que no haya interferencia de estilo ttk compleja
-                # y darle un color de fondo distintivo para ver si el Label se crea
-                lbl_img_widget = tk.Label(image_display_frame, image=img_tk_render_obj, bg="lightgreen") # Color de fondo temporal
-                lbl_img_widget.image = img_tk_render_obj # ¡¡¡MUY IMPORTANTE!!! Mantener referencia
-                lbl_img_widget.pack(pady=5, padx=5, anchor="center") # Centrar en su frame
-                print(f"DEBUG: Label de imagen empaquetado.")
+                lbl_img_widget = tk.Label(image_display_frame, image=img_tk_render_obj, bg=config.COLOR_BACKGROUND)
+                lbl_img_widget.image = img_tk_render_obj
+                lbl_img_widget.pack(pady=5, padx=5, anchor="center")
             else:
-                error_msg = f"(Imagen '{img_filename}' no encontrada en la ruta)"
-                print(f"DEBUG: {error_msg}")
+                error_msg = f"(Imagen '{img_filename}' no encontrada)"
                 ttk.Label(image_display_frame, text=error_msg, style="ErrorImage.TLabel", wraplength=180).pack(pady=10, padx=5, anchor="n")
         except Exception as e:
             error_detalle = f"(Error al procesar imagen: {e})"
-            print(f"DEBUG: {error_detalle}")
             ttk.Label(image_display_frame, text=error_detalle, style="ErrorImage.TLabel", wraplength=180).pack(pady=10, padx=5, anchor="n")
     else:
         ttk.Label(image_display_frame, text="(Sin imagen asignada)", style="Info.TLabel").pack(pady=10, padx=5, anchor="n")
     
     ttk.Label(text_frame, text=f"Producto: {nombre_sel}", style="Info.Header.TLabel").pack(pady=(0, 10), anchor="nw")
     
-    campos_admin_def = {"serie": "Número de serie:", "manual": "Manual (URL):", "calibracion": "Calibración (URL):", "bateria": "Batería:", "info": "Info Adicional:", "imagen": "Archivo Imagen:", "stock": "Stock:"}
-    campos_usr_def = {"serie": "Número de serie:", "manual_disp": "Manual:", "calibracion_disp": "Calibración:", "bateria": "Batería:", "info": "Info Adicional:", "imagen_disp": "Imagen Producto:", "stock": "Stock:"}
-    campos_final = campos_admin_def if data_manager.usuario_actual["rol"] == "administrador" else campos_usr_def
+    # MODIFICADO: Se simplifica la definición de campos para que sea la misma para ambos roles
+    campos_def = {"serie": "Número de serie:", "manual": "Manual:", "calibracion": "Calibración:", "bateria": "Batería:", "info": "Info Adicional:", "imagen": "Archivo Imagen:", "stock": "Stock:"}
     
-    for key_disp, label_txt in campos_final.items():
+    for key, label_txt in campos_def.items():
+        # Ocultar campos que no son para el usuario normal
+        if data_manager.usuario_actual["rol"] != 'administrador' and key in ['imagen', 'stock']:
+            continue
+            
         item_f = ttk.Frame(text_frame, style="Content.TFrame")
         item_f.pack(fill="x", pady=3, anchor="nw")
         ttk.Label(item_f, text=label_txt, style="Info.Bold.TLabel", width=18).pack(side="left", anchor="nw", padx=(0,5))
-        data_k = key_disp.replace("_disp", "")
+        
+        val_dato = str(datos_prod.get(key, ''))
 
         if data_manager.usuario_actual["rol"] == "administrador":
-            val_admin = str(datos_prod.get(data_k, ''))
-            if data_k == "info": entry_w = tk.Text(item_f, font=("Arial", 10), width=30, height=3, relief="solid", borderwidth=1, wrap="word"); entry_w.insert("1.0", val_admin)
-            else: entry_w = ttk.Entry(item_f, style="Search.TEntry", width=30); entry_w.insert(0, val_admin)
+            if key == "info": 
+                entry_w = tk.Text(item_f, font=("Arial", 10), width=30, height=3, relief="solid", borderwidth=1, wrap="word")
+                entry_w.insert("1.0", val_dato)
+            else: 
+                entry_w = ttk.Entry(item_f, style="Search.TEntry", width=30)
+                entry_w.insert(0, val_dato)
             entry_w.pack(side="left", fill="x", expand=True)
-            campos_edicion_producto_actual[data_k] = entry_w
-        else: 
-            val_usr = ""
-            if key_disp == "manual_disp": val_usr = "Disponible" if datos_prod.get('manual', '').strip().startswith(('http://', 'https://')) else "No disponible"
-            elif key_disp == "calibracion_disp": val_usr = "Disponible" if datos_prod.get('calibracion', '').strip().startswith(('http://', 'https://')) else "No disponible"
-            elif key_disp == "imagen_disp": val_usr = "Disponible" if datos_prod.get('imagen', '').strip() else "No disponible"
-            elif data_k == "info":
-                 val_usr = datos_prod.get('info', '').strip() or "(No especificado)"
-                 lbl_val_w = ttk.Label(item_f, text=val_usr, style="Info.TLabel", wraplength=text_frame.winfo_width() - 150 if text_frame.winfo_width() > 150 else 250)
-                 lbl_val_w.pack(side="left", anchor="nw"); continue 
-            else: val_usr = str(datos_prod.get(data_k, '(No especificado)')).strip() or "(No especificado)"
-            ttk.Label(item_f, text=val_usr, style="Info.TLabel").pack(side="left", anchor="nw")
+            campos_edicion_producto_actual[key] = entry_w
+        else:
+            # MODIFICADO: La vista de usuario ahora siempre muestra el valor real del dato, no "Disponible"
+            texto_final = val_dato.strip() if val_dato.strip() else "No disponible"
+            if key == "info":
+                 lbl_val_w = ttk.Label(item_f, text=texto_final, style="Info.TLabel", wraplength=text_frame.winfo_width() - 150 if text_frame.winfo_width() > 150 else 250)
+                 lbl_val_w.pack(side="left", anchor="nw")
+            else:
+                 ttk.Label(item_f, text=texto_final, style="Info.TLabel").pack(side="left", anchor="nw")
 
     btns_enlaces_f = ttk.Frame(text_frame, style="Content.TFrame")
     btns_enlaces_f.pack(fill="x", pady=(15,5), anchor="nw")
-    url_m = datos_prod.get('manual', '').strip()
-    if url_m and url_m.startswith(('http://', 'https://')): ttk.Button(btns_enlaces_f, text="Ver Manual", style="Accent.TButton", command=lambda u=url_m: abrir_enlace_web_util(u, app_principal_ref)).pack(side="left", padx=(0,10))
-    url_c = datos_prod.get('calibracion', '').strip()
-    if url_c and url_c.startswith(('http://', 'https://')): ttk.Button(btns_enlaces_f, text="Ver Calibración", style="Accent.TButton", command=lambda u=url_c: abrir_enlace_web_util(u, app_principal_ref)).pack(side="left", padx=(0,10))
+    
+    manual_valor = datos_prod.get('manual', '').strip()
+    if manual_valor:
+        ttk.Button(btns_enlaces_f, text="Ver Manual", style="Accent.TButton", command=lambda m=manual_valor: abrir_enlace_web_util(m, app_principal_ref)).pack(side="left", padx=(0,10))
+    
+    calibracion_valor = datos_prod.get('calibracion', '').strip()
+    if calibracion_valor:
+        ttk.Button(btns_enlaces_f, text="Ver Calibración", style="Accent.TButton", command=lambda c=calibracion_valor: abrir_enlace_web_util(c, app_principal_ref)).pack(side="left", padx=(0,10))
 
     if data_manager.usuario_actual["rol"] == "administrador":
         admin_acts_f = ttk.Frame(text_frame, style="Content.TFrame")
@@ -263,10 +257,7 @@ def mostrar_informacion_producto_seleccionado_ui(event=None):
         ttk.Button(admin_acts_f, text="Guardar Cambios", style="Accent.TButton", command=lambda np=nombre_sel: _guardar_cambios_producto_ui_accion(np)).pack(side="left", padx=(0,10))
         ttk.Button(admin_acts_f, text="Eliminar Producto", style="Accent.TButton", command=lambda np=nombre_sel: _eliminar_producto_ui_accion(np)).pack(side="left")
 
-# --- Funciones para Construir las Ventanas Principales (sin cambios significativos en la lógica de login/UI principal) ---
-# (Se mantienen las funciones _intentar_login_ui_logic, crear_ventana_login_ui, inicializar_enciclopedia_ui, on_app_close_ui
-# tal como estaban en la respuesta anterior, ya que el foco de este cambio está en mostrar_informacion_producto_seleccionado_ui)
-
+# --- Funciones para Construir las Ventanas Principales ---
 def _intentar_login_ui_logic(entry_usuario, entry_contrasena, ventana_login_ref, app_main_ref, callback_exito_login_ref):
     usuario_ingresado_login = entry_usuario.get()
     contrasena_ingresada_login = entry_contrasena.get()
