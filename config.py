@@ -3,7 +3,7 @@
 
 import os
 
-# --- Paleta de Colores (sin cambios) ---
+# --- Paleta de Colores ---
 COLOR_HEADER_BG = "#0A234D"
 COLOR_HEADER_FG = "white"
 COLOR_ACCENT = "#F39C12"
@@ -21,25 +21,34 @@ COLOR_TAB_INACTIVE_FG = COLOR_TEXT_GENERAL
 COLOR_ERROR_TEXT = "#D8000C" # Rojo para texto de error
 
 # --- Rutas y Nombres de Archivo ---
-# BASE_DIR será el directorio donde se encuentra este archivo config.py
-# Asumimos que config.py está en la raíz del proyecto.
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # Directorio raíz del proyecto
 
 # Directorio para las imágenes de los productos
-# AHORA APUNTA A UNA CARPETA 'imagenes_productos' DIRECTAMENTE EN LA RAÍZ DEL PROYECTO
 IMAGENES_PRODUCTOS_DIR_NAME = "imagenes_productos"
 IMAGENES_PRODUCTOS_PATH = os.path.join(BASE_DIR, IMAGENES_PRODUCTOS_DIR_NAME)
 
-# Nombre del archivo de log de Excel
+# Directorio para los manuales de los productos (PDFs locales)
+MANUALES_PRODUCTOS_DIR_NAME = "manuales_productos"
+MANUALES_PRODUCTOS_PATH = os.path.join(BASE_DIR, MANUALES_PRODUCTOS_DIR_NAME) # Asegúrate que esta línea exista y sea correcta
+
+# Archivo de log de Excel
 EXCEL_LOG_FILENAME = "registro_actividad_balanzas.xlsx"
 LOGS_DIR_NAME = "logs"
 LOGS_PATH = os.path.join(BASE_DIR, LOGS_DIR_NAME)
 EXCEL_LOG_FILE_FULL_PATH = os.path.join(LOGS_PATH, EXCEL_LOG_FILENAME)
 
-# Crear la carpeta de imágenes si no existe
-if not os.path.exists(IMAGENES_PRODUCTOS_PATH):
-    os.makedirs(IMAGENES_PRODUCTOS_PATH, exist_ok=True)
+# Crear las carpetas necesarias si no existen
+paths_to_create = [
+    IMAGENES_PRODUCTOS_PATH,
+    MANUALES_PRODUCTOS_PATH, # Asegurar que se cree la carpeta de manuales
+    LOGS_PATH
+]
+for path in paths_to_create:
+    if not os.path.exists(path):
+        try:
+            os.makedirs(path, exist_ok=True)
+            print(f"INFO (config.py): Directorio creado: {path}")
+        except OSError as e:
+            print(f"ADVERTENCIA (config.py): No se pudo crear el directorio '{path}': {e}")
 
-# La carpeta de logs también se crea en excel_logger.py, pero podemos asegurarla aquí también.
-if not os.path.exists(LOGS_PATH):
-    os.makedirs(LOGS_PATH, exist_ok=True)
+# NO se definen PRODUCTOS_JSON_FULL_PATH ni USUARIOS_JSON_FULL_PATH en esta versión

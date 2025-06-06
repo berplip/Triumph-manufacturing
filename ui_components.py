@@ -8,22 +8,22 @@ import os
 import datetime
 
 # Importaciones de otros módulos del proyecto
-import config
-import data_manager
+import config 
+import data_manager 
 from auth_handler import autenticar_usuario
 from excel_logger import registrar_accion_excel
 from utils import abrir_enlace_web_util
 
 # --- Variables de Módulo para Referencias a Widgets ---
-app_principal_ref = None
+app_principal_ref = None 
 entrada_modelo_busqueda_widget = None
 lista_sugerencias_busqueda_widget = None
 notebook_widget = None
-tab_info_producto_widget = None
-frame_info_producto_dinamico = None
+tab_info_producto_widget = None 
+frame_info_producto_dinamico = None 
 lbl_total_stock_widget = None
-campos_edicion_producto_actual = {}
-style_aplicacion_global = None
+campos_edicion_producto_actual = {} 
+style_aplicacion_global = None 
 
 # --- Funciones Auxiliares de UI ---
 def _limpiar_frame_contenido_widgets(frame):
@@ -244,9 +244,9 @@ def mostrar_informacion_producto_seleccionado_ui(event=None):
             elif key_disp == "calibracion_disp": val_usr = "Disponible" if datos_prod.get('calibracion', '').strip().startswith(('http://', 'https://')) else "No disponible"
             elif key_disp == "imagen_disp": val_usr = "Disponible" if datos_prod.get('imagen', '').strip() else "No disponible"
             elif data_k == "info":
-                val_usr = datos_prod.get('info', '').strip() or "(No especificado)"
-                lbl_val_w = ttk.Label(item_f, text=val_usr, style="Info.TLabel", wraplength=text_frame.winfo_width() - 150 if text_frame.winfo_width() > 150 else 250)
-                lbl_val_w.pack(side="left", anchor="nw"); continue 
+                 val_usr = datos_prod.get('info', '').strip() or "(No especificado)"
+                 lbl_val_w = ttk.Label(item_f, text=val_usr, style="Info.TLabel", wraplength=text_frame.winfo_width() - 150 if text_frame.winfo_width() > 150 else 250)
+                 lbl_val_w.pack(side="left", anchor="nw"); continue 
             else: val_usr = str(datos_prod.get(data_k, '(No especificado)')).strip() or "(No especificado)"
             ttk.Label(item_f, text=val_usr, style="Info.TLabel").pack(side="left", anchor="nw")
 
@@ -316,7 +316,7 @@ def crear_ventana_login_ui(app_principal_arg, callback_exito_login_arg):
     entry_contrasena_widget.pack(pady=(0, 20), padx=10, fill="x")
     
     btn_ingresar_widget = ttk.Button(login_main_frame, text="Ingresar", style="Login.TButton", 
-                            command=lambda: _intentar_login_ui_logic(entry_usuario_widget, entry_contrasena_widget, ventana_login_ui, app_principal_ref, callback_exito_login_arg))
+                              command=lambda: _intentar_login_ui_logic(entry_usuario_widget, entry_contrasena_widget, ventana_login_ui, app_principal_ref, callback_exito_login_arg))
     btn_ingresar_widget.pack(pady=10)
     
     ventana_login_ui.update_idletasks()

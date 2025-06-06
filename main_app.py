@@ -23,5 +23,5 @@ if __name__ == "__main__":
     # 'inicializar_enciclopedia_ui' se ejecutará si el login es exitoso.
     crear_ventana_login_ui(root_app, inicializar_enciclopedia_ui)
 
-    # 4. Iniciar el bucle principal de Tkinter para que la aplicación corra y maneje eventos.
+    # 4. Iniciar el bucle principal de Tkinter para que la aplicación corra y maneje eventos. w
     root_app.mainloop()
