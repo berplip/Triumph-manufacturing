@@ -8,7 +8,7 @@ from excel_logger import inicializar_excel_log
 from ui_components import crear_ventana_login_ui, inicializar_enciclopedia_ui
 
 if __name__ == "__main__":
-    # 1. Inicializar el logger de Excel al arrancar la aplicación
+    # 1. Inicializar el logger de Excel al arrancar la aplicaciónw
     # Esto asegura que el archivo y la carpeta de logs existan.
     inicializar_excel_log()
 

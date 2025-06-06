@@ -230,19 +230,18 @@ def mostrar_informacion_producto_seleccionado_ui(event=None):
             entry_w.pack(side="left", fill="x", expand=True)
             campos_edicion_producto_actual[key] = entry_w
         else:
-            # --- MODIFICADO: Lógica para mostrar "Disponible" o "No disponible" ---
+            # Lógica para mostrar "Disponible" o "No disponible"
             texto_a_mostrar = ''
             if key in ["manual", "calibracion"]:
                 texto_a_mostrar = "Disponible" if val_dato.strip() else "No disponible"
             else:
-                texto_a_mostrar = val_dato.strip() if val_dato.strip() else "No disponible"
+                texto_a_mostrar = val_dato.strip() if val_dato.strip() else "(No especificado)"
 
             if key == "info":
-                lbl_val_w = ttk.Label(item_f, text=texto_a_mostrar, style="Info.TLabel", wraplength=text_frame.winfo_width() - 150 if text_frame.winfo_width() > 150 else 250)
-                lbl_val_w.pack(side="left", anchor="nw")
+                 lbl_val_w = ttk.Label(item_f, text=texto_a_mostrar, style="Info.TLabel", wraplength=text_frame.winfo_width() - 150 if text_frame.winfo_width() > 150 else 250)
+                 lbl_val_w.pack(side="left", anchor="nw")
             else:
-                ttk.Label(item_f, text=texto_a_mostrar, style="Info.TLabel").pack(side="left", anchor="nw")
-            # --- FIN DE LA MODIFICACIÓN ---
+                 ttk.Label(item_f, text=texto_a_mostrar, style="Info.TLabel").pack(side="left", anchor="nw")
 
     btns_enlaces_f = ttk.Frame(text_frame, style="Content.TFrame")
     btns_enlaces_f.pack(fill="x", pady=(15,5), anchor="nw")
@@ -290,6 +289,15 @@ def crear_ventana_login_ui(app_principal_arg, callback_exito_login_arg):
     ventana_login_ui.grab_set()
     ventana_login_ui.protocol("WM_DELETE_WINDOW", lambda: on_app_close_ui())
 
+    # --- NUEVO: Establecer el icono para la ventana de login ---
+    try:
+        icon_path = os.path.join(config.IMAGENES_PRODUCTOS_PATH, "icono.ico") 
+        if os.path.exists(icon_path):
+            ventana_login_ui.iconbitmap(icon_path)
+    except Exception as e:
+        print(f"No se pudo cargar el icono para la ventana de login: {e}")
+    # --- FIN DE CÓDIGO NUEVO ---
+
     login_ui_style_local = ttk.Style(ventana_login_ui)
     try: login_ui_style_local.theme_use('clam') 
     except tk.TclError: login_ui_style_local.theme_use('default')
@@ -311,7 +319,7 @@ def crear_ventana_login_ui(app_principal_arg, callback_exito_login_arg):
     entry_contrasena_widget.pack(pady=(0, 20), padx=10, fill="x")
     
     btn_ingresar_widget = ttk.Button(login_main_frame, text="Ingresar", style="Login.TButton", 
-                              command=lambda: _intentar_login_ui_logic(entry_usuario_widget, entry_contrasena_widget, ventana_login_ui, app_principal_ref, callback_exito_login_arg))
+                                     command=lambda: _intentar_login_ui_logic(entry_usuario_widget, entry_contrasena_widget, ventana_login_ui, app_principal_ref, callback_exito_login_arg))
     btn_ingresar_widget.pack(pady=10)
     
     ventana_login_ui.update_idletasks()
@@ -350,6 +358,21 @@ def inicializar_enciclopedia_ui(app_principal_arg):
 
     frame_cabecera_main = ttk.Frame(app_principal_ref, style="Header.TFrame")
     frame_cabecera_main.pack(fill="x", side="top")
+
+    # NUEVO: Cargar y mostrar el logo
+    try:
+        logo_path = os.path.join(config.IMAGENES_PRODUCTOS_PATH, "logo.png") 
+        if os.path.exists(logo_path):
+            logo_pil = Image.open(logo_path)
+            logo_pil.thumbnail((50, 50)) 
+            logo_tk = ImageTk.PhotoImage(logo_pil)
+            
+            lbl_logo = ttk.Label(frame_cabecera_main, image=logo_tk, style="Header.TLabel")
+            lbl_logo.image = logo_tk 
+            lbl_logo.pack(side="left", padx=(10, 5), pady=5)
+    except Exception as e:
+        print(f"Error al cargar el logo: {e}")
+
     ttk.Label(frame_cabecera_main, text="Balanzas Triunfo Enciclopedia", style="Header.TLabel").pack(pady=(5,10), side="left", padx=10)
     if data_manager.usuario_actual["rol"] == "administrador":
         btn_reg_prod = ttk.Button(frame_cabecera_main, text="Registrar Producto", style="Accent.TButton", command=_abrir_ventana_registrar_producto_ui_accion)
