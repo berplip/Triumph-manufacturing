@@ -51,4 +51,4 @@ for path in paths_to_create:
         except OSError as e:
             print(f"ADVERTENCIA (config.py): No se pudo crear el directorio '{path}': {e}")
 
-# NO se definen PRODUCTOS_JSON_FULL_PATH ni USUARIOS_JSON_FULL_PATH en esta versión
+# NO se definen PRODUCTOS_JSON_FULL_PATH ni USUARIOS_JSON_FULL_PATH en esta versión w
