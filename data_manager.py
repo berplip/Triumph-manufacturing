@@ -1,18 +1,15 @@
-# data_manager.py
-# Maneja la carga y guardado de datos desde archivos JSON.d
+# data_manager.pylol
+# Maneja la carga y guardado de datos desde archivos JSON (versión simplificada).
 
 import json
-import hashlib
 from config import PRODUCTOS_JSON_PATH, USUARIOS_JSON_PATH
-from auth_handler import _generar_hash_contrasena
 
-# --- Estado del Usuario Actual (global a este módulo) ---
+# --- Estado del Usuario Actual ---
 usuario_actual = {"nombre": None, "rol": None}
 hora_inicio_sesion_actual = None
 
-# --- Funciones de bajo nivel para manejar JSON ---
+# --- Funciones de bajo nivel para JSON ---
 def _cargar_datos_json(ruta_archivo):
-    """Carga datos desde un archivo JSON."""
     try:
         with open(ruta_archivo, 'r', encoding='utf-8') as f:
             return json.load(f)
@@ -20,19 +17,12 @@ def _cargar_datos_json(ruta_archivo):
         return {}
 
 def _guardar_datos_json(ruta_archivo, datos):
-    """Guarda datos en un archivo JSON."""
     with open(ruta_archivo, 'w', encoding='utf-8') as f:
         json.dump(datos, f, indent=4)
 
-# --- Funciones Públicas para Productos ---
-# (Las funciones de productos no cambian)
-def get_productos_data():
-    return _cargar_datos_json(PRODUCTOS_JSON_PATH)
-
-def get_producto_data(nombre_producto):
-    productos = get_productos_data()
-    return productos.get(nombre_producto)
-
+# --- Funciones para Productos (sin cambios) ---
+def get_productos_data(): return _cargar_datos_json(PRODUCTOS_JSON_PATH)
+def get_producto_data(nombre_producto): return get_productos_data().get(nombre_producto)
 def actualizar_producto_data(nombre_producto, datos_actualizados):
     productos = get_productos_data()
     if nombre_producto in productos:
@@ -40,7 +30,6 @@ def actualizar_producto_data(nombre_producto, datos_actualizados):
         _guardar_datos_json(PRODUCTOS_JSON_PATH, productos)
         return True
     return False
-
 def eliminar_producto_data(nombre_producto):
     productos = get_productos_data()
     if nombre_producto in productos:
@@ -48,7 +37,6 @@ def eliminar_producto_data(nombre_producto):
         _guardar_datos_json(PRODUCTOS_JSON_PATH, productos)
         return True
     return False
-
 def registrar_producto_data(nombre_producto, datos_producto):
     productos = get_productos_data()
     if nombre_producto not in productos:
@@ -57,30 +45,28 @@ def registrar_producto_data(nombre_producto, datos_producto):
         return True
     return False
 
-# --- Funciones Públicas para Usuarios ---
+# --- Funciones para Usuarios ---
 def get_usuarios_registrados_data():
     return _cargar_datos_json(USUARIOS_JSON_PATH)
 
-# --- NUEVAS FUNCIONES PARA GESTIÓN DE USUARIOS ---
-def registrar_usuario(nombre_usuario, contrasena_plano):
-    """Añade un nuevo usuario con su contraseña hasheada."""
+def guardar_o_actualizar_usuario(nombre_usuario, datos_usuario):
+    """Guarda un nuevo usuario o actualiza los datos de uno existente."""
     usuarios = get_usuarios_registrados_data()
-    if nombre_usuario in usuarios:
-        return False, "El nombre de usuario ya existe."
+    # Protección: No se puede cambiar el rol del superadmin
+    if nombre_usuario == "superadmin" and datos_usuario.get("rol") != "superadmin":
+        return False, "No se puede cambiar el rol del Super Administrador."
     
-    nuevo_hash = _generar_hash_contrasena(contrasena_plano)
-    usuarios[nombre_usuario] = {"contrasena_hash": nuevo_hash, "rol": "usuario"} # Por defecto, rol 'usuario'
+    usuarios[nombre_usuario] = datos_usuario
     _guardar_datos_json(USUARIOS_JSON_PATH, usuarios)
-    return True, "Usuario registrado con éxito."
+    return True, f"Usuario '{nombre_usuario}' guardado con éxito."
 
 def eliminar_usuario(nombre_usuario):
     """Elimina un usuario del sistema."""
     usuarios = get_usuarios_registrados_data()
     if nombre_usuario in usuarios:
-        # Medida de seguridad: no permitir eliminar al único administrador.
-        admins = [u for u, d in usuarios.items() if d.get("rol") == "administrador"]
-        if usuarios[nombre_usuario].get("rol") == "administrador" and len(admins) <= 1:
-            return False, "No se puede eliminar al único administrador."
+        # Protección: No se puede eliminar al superadmin
+        if nombre_usuario == "superadmin":
+            return False, "No se puede eliminar al Super Administrador."
         
         del usuarios[nombre_usuario]
         _guardar_datos_json(USUARIOS_JSON_PATH, usuarios)
