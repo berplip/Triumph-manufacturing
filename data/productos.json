@@ -1,0 +1,38 @@
+{
+    "LP7516": {
+        "serie": "666",
+        "manual": "LP7516_manual.pdf",
+        "calibracion": "https://www.youtube.com/watch?v=WJBHmguujdc&ab_channel=ONECOIN",
+        "bateria": "4V4AH/20HR",
+        "info": "Conector de 5 pines y RS232.",
+        "imagen": "LP7516sec01.png",
+        "stock": 10
+    },
+    "TCS-IND.": {
+        "serie": "67890ABC",
+        "manual": "TCS-IND_manual.pdf",
+        "calibracion": "https://www.youtube.com/watch?v=example_cal_video/",
+        "bateria": "Níquel",
+        "info": "Indicador industrial versátil.",
+        "imagen": "TCS-IND.png",
+        "stock": 5
+    },
+    "XK": {
+        "serie": "123 ",
+        "manual": "",
+        "calibracion": "",
+        "bateria": "6V4AH",
+        "info": "Indicador básico y económico.",
+        "imagen": "XK.png",
+        "stock": 25
+    },
+    "TRASPALETA": {
+        "serie": "XYZ789",
+        "manual": "TRASPALETA_manual.pdf",
+        "calibracion": "",
+        "bateria": "Batería recargable específica.",
+        "info": "Balanza integrada en transpaleta manual.",
+        "imagen": "TRASPALETA.png",
+        "stock": 3
+    }
+}

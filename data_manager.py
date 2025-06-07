@@ -1,105 +1,88 @@
 # data_manager.py
-# Maneja los datos de la aplicación: productos, usuarios y estado de sesión.
-# En esta versión, los datos están definidos directamente en este archivo.
+# Maneja la carga y guardado de datos desde archivos JSON.d
 
+import json
 import hashlib
-# --- Almacenamiento de Usuarios (directamente en el código) ---
-# Contraseñas hasheadas: "pass123" para usuario1, "adminpass" para admin.
-_usuarios_registrados = {
-    "usuario1": {"contrasena_hash": hashlib.sha256("pass123".encode()).hexdigest(), "rol": "usuario"},
-    "admin": {"contrasena_hash": hashlib.sha256("adminpass".encode()).hexdigest(), "rol": "administrador"}
-    # Puedes agregar más usuarios aquí si es necesario, generando sus hashes
-}
+from config import PRODUCTOS_JSON_PATH, USUARIOS_JSON_PATH
+from auth_handler import _generar_hash_contrasena
 
 # --- Estado del Usuario Actual (global a este módulo) ---
 usuario_actual = {"nombre": None, "rol": None}
 hora_inicio_sesion_actual = None
 
-# --- Diccionario de productos (directamente en el código) ---
-# "manual": nombre del archivo PDF local (ej. "LP7516_manual.pdf") que debe estar en la carpeta definida en config.MANUALES_PRODUCTOS_PATH
-# "calibracion": URL para el video.
-# "imagen": nombre del archivo de imagen (ej. "LP7516.png") que debe estar en config.IMAGENES_PRODUCTOS_PATH
-_productos = {
-    "LP7516": {
-        "serie": "666",
-        "manual": "lp7516manual.pdf",
-        "calibracion": "https://www.youtube.com/watch?v=WJbHmguujdc&ab_channel=ONECOIN",
-        "bateria": "4V4AH/20HR",
-        "info": "Conector de 5 pines y RS232.",
-        "imagen": "LP7516sec01.png",
-        "stock": 10
-    },
-    "TCS-IND.": {
-        "serie": "67890ABC",
-        "manual": "TCS-IND_manual.pdf", # Ejemplo, podría estar vacío si no hay manual
-        "calibracion": "https://www.youtube.com/watch?v=example_cal_video",
-        "bateria": "Níquel",
-        "info": "Indicador industrial versátil.",
-        "imagen": "TCS-IND.png",
-        "stock": 5
-    },
-    # MODIFICADO: Se corrigió la clave eliminando el espacio al final.
-    "XK": {
-        "serie": "123 ",
-        "manual": "", # Sin manual local
-        "calibracion": "", # Sin URL de calibración
-        "bateria": "6V4AH",
-        "info": "Indicador básico y económico.",
-        "imagen": "XK.png",
-        "stock": 25
-    },
-    "TRASPALETA": {
-        "serie": "XYZ789",
-        "manual": "TRASPALETA_manual.pdf",
-        "calibracion": "",
-        "bateria": "Batería recargable específica.",
-        "info": "Balanza integrada en transpaleta manual.",
-        "imagen": "TRASPALETA.png",
-        "stock": 3
-    }
-    # Agrega más productos aquí directamente si es necesario
-}
+# --- Funciones de bajo nivel para manejar JSON ---
+def _cargar_datos_json(ruta_archivo):
+    """Carga datos desde un archivo JSON."""
+    try:
+        with open(ruta_archivo, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
 
-# --- Funciones Públicas para Acceder y Modificar Datos ---
+def _guardar_datos_json(ruta_archivo, datos):
+    """Guarda datos en un archivo JSON."""
+    with open(ruta_archivo, 'w', encoding='utf-8') as f:
+        json.dump(datos, f, indent=4)
+
+# --- Funciones Públicas para Productos ---
+# (Las funciones de productos no cambian)
 def get_productos_data():
-    """Retorna una copia del diccionario de productos."""
-    return _productos.copy()
+    return _cargar_datos_json(PRODUCTOS_JSON_PATH)
 
 def get_producto_data(nombre_producto):
-    """Retorna los datos de un producto específico (como una copia), o None."""
-    producto = _productos.get(nombre_producto)
-    return producto.copy() if producto else None
-
-def get_usuarios_registrados_data():
-    """Retorna una copia del diccionario de usuarios."""
-    return _usuarios_registrados.copy()
+    productos = get_productos_data()
+    return productos.get(nombre_producto)
 
 def actualizar_producto_data(nombre_producto, datos_actualizados):
-    """Actualiza un producto existente en el diccionario en memoria."""
-    if nombre_producto in _productos:
-        _productos[nombre_producto].update(datos_actualizados)
-        print(f"INFO (data_manager): Producto '{nombre_producto}' actualizado en memoria.")
+    productos = get_productos_data()
+    if nombre_producto in productos:
+        productos[nombre_producto].update(datos_actualizados)
+        _guardar_datos_json(PRODUCTOS_JSON_PATH, productos)
         return True
-    print(f"ERROR (data_manager): Intento de actualizar producto no existente '{nombre_producto}'.")
     return False
 
 def eliminar_producto_data(nombre_producto):
-    """Elimina un producto del diccionario en memoria."""
-    if nombre_producto in _productos:
-        del _productos[nombre_producto]
-        print(f"INFO (data_manager): Producto '{nombre_producto}' eliminado de memoria.")
+    productos = get_productos_data()
+    if nombre_producto in productos:
+        del productos[nombre_producto]
+        _guardar_datos_json(PRODUCTOS_JSON_PATH, productos)
         return True
-    print(f"ERROR (data_manager): Intento de eliminar producto no existente '{nombre_producto}'.")
     return False
 
 def registrar_producto_data(nombre_producto, datos_producto):
-    """Registra un nuevo producto en el diccionario en memoria."""
-    if nombre_producto not in _productos:
-        _productos[nombre_producto] = datos_producto
-        print(f"INFO (data_manager): Producto '{nombre_producto}' registrado en memoria.")
+    productos = get_productos_data()
+    if nombre_producto not in productos:
+        productos[nombre_producto] = datos_producto
+        _guardar_datos_json(PRODUCTOS_JSON_PATH, productos)
         return True
-    print(f"ERROR (data_manager): Intento de registrar producto ya existente '{nombre_producto}'.")
     return False
 
-# Las funciones inicializar_datos_productos e inicializar_datos_usuarios NO existen
-# en esta versión porque los datos se definen directamente arriba y no se cargan desde JSON.
+# --- Funciones Públicas para Usuarios ---
+def get_usuarios_registrados_data():
+    return _cargar_datos_json(USUARIOS_JSON_PATH)
+
+# --- NUEVAS FUNCIONES PARA GESTIÓN DE USUARIOS ---
+def registrar_usuario(nombre_usuario, contrasena_plano):
+    """Añade un nuevo usuario con su contraseña hasheada."""
+    usuarios = get_usuarios_registrados_data()
+    if nombre_usuario in usuarios:
+        return False, "El nombre de usuario ya existe."
+    
+    nuevo_hash = _generar_hash_contrasena(contrasena_plano)
+    usuarios[nombre_usuario] = {"contrasena_hash": nuevo_hash, "rol": "usuario"} # Por defecto, rol 'usuario'
+    _guardar_datos_json(USUARIOS_JSON_PATH, usuarios)
+    return True, "Usuario registrado con éxito."
+
+def eliminar_usuario(nombre_usuario):
+    """Elimina un usuario del sistema."""
+    usuarios = get_usuarios_registrados_data()
+    if nombre_usuario in usuarios:
+        # Medida de seguridad: no permitir eliminar al único administrador.
+        admins = [u for u, d in usuarios.items() if d.get("rol") == "administrador"]
+        if usuarios[nombre_usuario].get("rol") == "administrador" and len(admins) <= 1:
+            return False, "No se puede eliminar al único administrador."
+        
+        del usuarios[nombre_usuario]
+        _guardar_datos_json(USUARIOS_JSON_PATH, usuarios)
+        return True, "Usuario eliminado con éxito."
+    return False, "El usuario no existe."

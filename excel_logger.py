@@ -6,19 +6,23 @@ import datetime
 import openpyxl
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, Alignment
+import threading
 
 # Importa desde config y data_manager
 from config import EXCEL_LOG_FILE_FULL_PATH, LOGS_PATH
-import data_manager # Para acceder a data_manager.usuario_actual
+import data_manager 
+
+# MODIFICADO: Se añade un Lock para evitar escrituras simultáneas que puedan corromper el archivo.
+excel_lock = threading.Lock()
 
 def inicializar_excel_log():
     """Crea el archivo Excel y la carpeta de logs si no existen."""
+    # Esta función no necesita cambios, pero se mantiene por completitud.
     if not os.path.exists(LOGS_PATH):
         try:
             os.makedirs(LOGS_PATH, exist_ok=True)
         except OSError as e:
             print(f"ADVERTENCIA: No se pudo crear el directorio de logs '{LOGS_PATH}': {e}")
-            # La aplicación podría continuar sin logging en Excel si esto falla.
 
     if not os.path.exists(EXCEL_LOG_FILE_FULL_PATH):
         try:
@@ -37,36 +41,36 @@ def inicializar_excel_log():
                 elif header_title == "Duracion Sesion (min)": sheet.column_dimensions[column_letter].width = 22
                 else: sheet.column_dimensions[column_letter].width = 25
             workbook.save(EXCEL_LOG_FILE_FULL_PATH)
+            workbook.close()
         except Exception as e:
             print(f"ADVERTENCIA: No se pudo inicializar el archivo de log Excel '{EXCEL_LOG_FILE_FULL_PATH}': {e}")
 
 def registrar_accion_excel(accion, detalles="", duracion_min=None):
-    """Registra una acción en el archivo Excel."""
-    if not os.path.exists(LOGS_PATH): # Doble chequeo por si acaso
-        inicializar_excel_log() # Intenta crear el dir y el archivo si no existen
-
-    try:
-        # Cargar o crear el libro de trabajo
-        if os.path.exists(EXCEL_LOG_FILE_FULL_PATH):
-            workbook = openpyxl.load_workbook(EXCEL_LOG_FILE_FULL_PATH)
-            sheet = workbook.active
-        else: # Si después de inicializar sigue sin existir (error previo)
-            print(f"ADVERTENCIA: Archivo de log '{EXCEL_LOG_FILE_FULL_PATH}' no encontrado. Creando uno nuevo para esta sesión.")
-            workbook = openpyxl.Workbook()
-            sheet = workbook.active
-            sheet.title = "Registro de Actividad"
-            headers = ["Timestamp", "Usuario", "Rol", "Accion", "Detalles Adicionales", "Duracion Sesion (min)"]
-            sheet.append(headers) # Añadir encabezados si es un archivo nuevo
-            # (Podrías re-aplicar formato de encabezados aquí también si lo deseas)
-    
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        nombre_usuario_log = data_manager.usuario_actual.get("nombre", "N/A")
-        rol_usuario_log = data_manager.usuario_actual.get("rol", "N/A")
+    """Registra una acción en el archivo Excel de forma segura."""
+    # Se usa un Lock para asegurar que solo un hilo escriba a la vez.
+    with excel_lock:
+        try:
+            # Cargar o crear el libro de trabajo
+            if os.path.exists(EXCEL_LOG_FILE_FULL_PATH):
+                workbook = openpyxl.load_workbook(EXCEL_LOG_FILE_FULL_PATH)
+                sheet = workbook.active
+            else: 
+                # Si el archivo no existe por alguna razón, se reinicializa.
+                inicializar_excel_log()
+                workbook = openpyxl.load_workbook(EXCEL_LOG_FILE_FULL_PATH)
+                sheet = workbook.active
         
-        log_entry = [timestamp, nombre_usuario_log, rol_usuario_log, accion, detalles,
-                    f"{duracion_min:.2f}" if duracion_min is not None else ""]
-        sheet.append(log_entry)
-        workbook.save(EXCEL_LOG_FILE_FULL_PATH)
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            nombre_usuario_log = data_manager.usuario_actual.get("nombre", "N/A")
+            rol_usuario_log = data_manager.usuario_actual.get("rol", "N/A")
+            
+            # Asegura que la entrada siempre tenga el número correcto de columnas.
+            duracion_str = f"{duracion_min:.2f}" if duracion_min is not None else ""
+            log_entry = [timestamp, nombre_usuario_log, rol_usuario_log, accion, detalles, duracion_str]
+            
+            sheet.append(log_entry)
+            workbook.save(EXCEL_LOG_FILE_FULL_PATH)
+            workbook.close()
 
-    except Exception as e:
-        print(f"ERROR al registrar acción en Excel: {e}. Acción: '{accion}', Detalles: '{detalles}'")
+        except Exception as e:
+            print(f"ERROR al registrar acción en Excel: {e}. Acción: '{accion}', Detalles: '{detalles}'")
